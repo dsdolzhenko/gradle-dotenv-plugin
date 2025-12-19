@@ -1,0 +1,35 @@
+# Configure Dependabot version updates. Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/working-with-dependabot/dependabot-options-reference
+
+# Only minor and patch updates are enabled, and grouped together.
+# Major version updates should be handled separately.
+
+version: 2
+updates:
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      actions:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+  # Enable version updates for Gradle
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      gradle:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
