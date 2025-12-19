@@ -1,5 +1,17 @@
 val gitVersion: groovy.lang.Closure<String> by extra
 
+val githubUsername: String by extra {
+    findProperty("githubUsername")?.toString()
+        ?: System.getenv("GITHUB_ACTOR")?.ifEmpty { null }
+        ?: ""
+}
+
+val githubToken: String by extra {
+    findProperty("githubToken")?.toString()
+        ?: System.getenv("GITHUB_TOKEN")?.ifEmpty { null }
+        ?: ""
+}
+
 plugins {
     kotlin("jvm") version "2.2.21"
     id("com.palantir.git-version") version "4.2.0"
@@ -39,5 +51,14 @@ tasks.test {
 publishing {
     repositories {
         mavenLocal()
+
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/dsdolzhenko/gradle-dotenv-plugin")
+            credentials {
+                username = githubUsername
+                password = githubToken
+            }
+        }
     }
 }

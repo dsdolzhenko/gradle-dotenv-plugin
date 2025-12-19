@@ -1,0 +1,39 @@
+name: publish
+
+on:
+  release:
+    types:
+      - created
+
+env:
+  JAVA_DISTRIBUTION: corretto
+  JAVA_VERSION: 21
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Set artifact version based on tag name
+        run: echo "${{ github.event.release.tag_name }}" | sed -e 's/^v//' -e 's/^/VERSION=/' >> $GITHUB_ENV
+
+      - name: Publish to GitHub Packages and Space
+        run: ./gradlew publish --no-daemon
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
