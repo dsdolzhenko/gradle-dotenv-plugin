@@ -1,8 +1,9 @@
 package io.github.dsdolzhenko.dotenv
 
-import org.gradle.api.Project
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import javax.inject.Inject
 
 /**
  * Extension for configuring the DotEnv plugin.
@@ -18,56 +19,52 @@ import org.gradle.api.provider.Property
  * }
  * ```
  */
-abstract class DotEnvExtension(private val project: Project) {
+abstract class DotEnvExtension @Inject constructor(objects: ObjectFactory)  {
 
     /**
      * Whether the plugin is enabled. Default: true
      */
-    abstract val enabled: Property<Boolean>
+    val enabled: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(true)
 
     /**
      * List of .env files to load, relative to the project root.
      * Files are loaded in order, later files override earlier ones.
      * Default: [".env"]
      */
-    abstract val files: ListProperty<String>
+    val files: ListProperty<String> = objects.listProperty(String::class.java)
+        .convention(listOf(".env"))
 
     /**
      * Whether to throw an error if no .env file is found.
      * Default: false
      */
-    abstract val required: Property<Boolean>
+    val required: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
 
     /**
      * Whether system properties should override .env values.
      * Useful for CI/CD environments.
      * Default: true
      */
-    abstract val systemPropertiesOverride: Property<Boolean>
+    val systemPropertiesOverride: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(true)
 
     /**
      * List of regex patterns for environment variables to include.
      * If empty, all variables are included (subject to exclude list).
      * Default: [] (include all)
      */
-    abstract val include: ListProperty<String>
+    val include: ListProperty<String> = objects.listProperty(String::class.java)
+        .convention(emptyList())
 
     /**
      * List of regex patterns for environment variables to exclude.
      * Takes precedence over the include list.
      * Default: [] (exclude none)
      */
-    abstract val exclude: ListProperty<String>
-
-    init {
-        // Set defaults
-        enabled.convention(true)
-        files.convention(listOf(".env"))
-        required.convention(false)
-        systemPropertiesOverride.convention(true)
-        include.convention(emptyList())
-        exclude.convention(emptyList())
-    }
+    val exclude: ListProperty<String> = objects.listProperty(String::class.java)
+        .convention(emptyList())
 
     /**
      * Convenience method to add a file to the files list

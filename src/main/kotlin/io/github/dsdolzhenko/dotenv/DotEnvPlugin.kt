@@ -16,7 +16,7 @@ class DotEnvPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         // Create the extension for configuration
-        val extension = project.extensions.create("dotenv", DotEnvExtension::class.java, project)
+        val extension = project.extensions.create("dotenv", DotEnvExtension::class.java)
 
         // Configure after project evaluation to ensure the extension is configured
         project.afterEvaluate {
