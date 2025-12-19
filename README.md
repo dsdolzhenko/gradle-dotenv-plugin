@@ -14,14 +14,26 @@ A Gradle plugin that loads environment variables from `.env` files and injects t
 
 ## Installation
 
-In your `settings.gradle.kts` add the following:
+You will need a GitHub personal access token with `read:packages` scope to access the plugin's Maven repository.
+See [Authenticating to GitHub Packages](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry#authenticating-to-github-packages) for details.
+
+Assuming that you have `githubUsername` and `githubToken` variables set in your `gradle.properties`, add the following to your `settings.gradle.kts`:
 
 ```kotlin
 pluginManagement {
-    repositories {
-        maven { url = uri("https://maven.pkg.github.com/dsdolzhenko/gradle-dotenv-plugin") }
-        gradlePluginPortal()
+  val githubUsername: String? by settings
+  val githubToken: String? by settings
+
+  repositories {
+    maven {
+      url = uri("https://maven.pkg.github.com/dsdolzhenko/gradle-dotenv-plugin")
+      credentials {
+        username = githubUsername ?: System.getenv("GITHUB_USERNAME")
+        password = githubToken ?: System.getenv("GITHUB_TOKEN")
+      }
     }
+    gradlePluginPortal()
+  }
 }
 ```
 
