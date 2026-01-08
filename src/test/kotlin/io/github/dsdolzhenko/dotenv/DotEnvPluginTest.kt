@@ -21,6 +21,9 @@ class DotEnvPluginTest {
 
     @Test
     fun `plugin applies successfully`() {
+        // Create a settings.gradle.kts file
+        projectDir.resolve("settings.gradle.kts").writeText("")
+
         buildFile.writeText(
             """
             plugins {
@@ -56,6 +59,9 @@ class DotEnvPluginTest {
             """.trimIndent()
         )
 
+        // Create a settings.gradle.kts file
+        projectDir.resolve("settings.gradle.kts").writeText("")
+
         buildFile.writeText(
             """
             plugins {
@@ -63,9 +69,15 @@ class DotEnvPluginTest {
             }
 
             tasks.register<Exec>("testExec") {
-                commandLine("echo", "test")
-                doFirst {
-                    println("Environment variables: ${'$'}{environment}")
+                commandLine("printenv", "TEST_VAR")
+                doLast {
+                    val testVar = environment["TEST_VAR"]
+                    val dbHost = environment["DB_HOST"]
+                    val dbPort = environment["DB_PORT"]
+
+                    println("ENV_CHECK:TEST_VAR=${'$'}testVar")
+                    println("ENV_CHECK:DB_HOST=${'$'}dbHost")
+                    println("ENV_CHECK:DB_PORT=${'$'}dbPort")
                 }
             }
             """.trimIndent()
@@ -73,17 +85,23 @@ class DotEnvPluginTest {
 
         val result = GradleRunner.create()
             .withProjectDir(projectDir)
-            .withArguments("testExec", "--info")
+            .withArguments("testExec")
             .withPluginClasspath()
             .build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":testExec")?.outcome)
-        assertTrue(result.output.contains("Loaded 3 environment variables from .env files"))
+        assertTrue(result.output.contains("ENV_CHECK:TEST_VAR=test_value"),
+            "Expected TEST_VAR to be set to test_value, but output was: ${result.output}")
+        assertTrue(result.output.contains("ENV_CHECK:DB_HOST=localhost"))
+        assertTrue(result.output.contains("ENV_CHECK:DB_PORT=5432"))
     }
 
     @Test
     fun `plugin works when disabled`() {
         envFile.writeText("TEST_VAR=test_value")
+
+        // Create a settings.gradle.kts file
+        projectDir.resolve("settings.gradle.kts").writeText("")
 
         buildFile.writeText(
             """
@@ -95,8 +113,11 @@ class DotEnvPluginTest {
                 enabled.set(false)
             }
 
-            tasks.register("printStatus") {
+            tasks.register<Exec>("testDisabled") {
+                commandLine("echo", "test")
                 doLast {
+                    val testVar = environment["TEST_VAR"]
+                    println("ENV_CHECK:TEST_VAR=${'$'}testVar")
                     println("Task executed")
                 }
             }
@@ -105,36 +126,49 @@ class DotEnvPluginTest {
 
         val result = GradleRunner.create()
             .withProjectDir(projectDir)
-            .withArguments("printStatus")
+            .withArguments("testDisabled")
             .withPluginClasspath()
             .build()
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":printStatus")?.outcome)
+        assertEquals(TaskOutcome.SUCCESS, result.task(":testDisabled")?.outcome)
+        assertTrue(result.output.contains("Task executed"))
+        // When disabled, environment variables should NOT be injected
+        assertTrue(result.output.contains("ENV_CHECK:TEST_VAR=null"))
     }
 
     @Test
     fun `plugin handles missing dotenv file gracefully`() {
+        // Create a settings.gradle.kts file
+        projectDir.resolve("settings.gradle.kts").writeText("")
+
         buildFile.writeText(
             """
             plugins {
                 id("io.github.dsdolzhenko.dotenv")
             }
 
-            tasks.register("testTask") {
+            tasks.register<Exec>("testTask") {
+                commandLine("echo", "test")
                 doLast {
+                    val testVar = environment["TEST_VAR"]
+                    println("ENV_CHECK:TEST_VAR=${'$'}testVar")
                     println("Task executed successfully")
                 }
             }
             """.trimIndent()
         )
 
+        // Don't create .env file - test that plugin handles missing file gracefully
         val result = GradleRunner.create()
             .withProjectDir(projectDir)
-            .withArguments("testTask", "--info")
+            .withArguments("testTask")
             .withPluginClasspath()
             .build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":testTask")?.outcome)
-        assertTrue(result.output.contains("No .env file found, skipping environment variable injection"))
+        // Verify that the task runs successfully even without .env file
+        assertTrue(result.output.contains("Task executed successfully"))
+        // Verify that TEST_VAR is not set (should be null)
+        assertTrue(result.output.contains("ENV_CHECK:TEST_VAR=null"))
     }
 }
