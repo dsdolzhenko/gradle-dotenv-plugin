@@ -1,5 +1,6 @@
 package io.github.dsdolzhenko.dotenv
 
+import io.github.cdimascio.dotenv.Dotenv
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
@@ -74,7 +75,15 @@ class DotEnvPlugin : Plugin<Project> {
     }
 
     private fun parseEnvFile(file: File): Map<String, String> {
-        return DotEnvParser.create().parseFile(file)
+        val dotenv = Dotenv.configure()
+            .directory(file.parent)
+            .filename(file.name)
+            .ignoreIfMissing()
+            .ignoreIfMalformed()
+            .load()
+
+        return dotenv.entries()
+            .associate { it.key to it.value }
     }
 
     private fun configureAllTasks(

@@ -27,6 +27,7 @@ repositories {
 }
 
 dependencies {
+    implementation("io.github.cdimascio:dotenv-java:3.2.0")
     testImplementation(kotlin("test"))
     testImplementation(gradleTestKit())
 }
