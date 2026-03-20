@@ -16,7 +16,7 @@ plugins {
     kotlin("jvm") version "2.3.0"
     id("com.palantir.git-version") version "4.2.0"
     id("java-gradle-plugin")
-    id("maven-publish")
+    id("com.gradle.plugin-publish") version "1.3.0"
 }
 
 group = "io.github.dsdolzhenko"
@@ -37,11 +37,16 @@ kotlin {
 }
 
 gradlePlugin {
+    website = "https://github.com/dsdolzhenko/gradle-dotenv-plugin"
+    vcsUrl = "https://github.com/dsdolzhenko/gradle-dotenv-plugin"
+
     plugins {
         register("dotenv") {
             id = "io.github.dsdolzhenko.dotenv"
             implementationClass = "io.github.dsdolzhenko.dotenv.DotEnvPlugin"
-            tags.addAll("dotenv")
+            displayName = "Gradle DotEnv Plugin"
+            description = "Loads environment variables from .env files into Gradle tasks (JavaExec, Exec, Test)"
+            tags.addAll("dotenv", "environment", "env")
         }
     }
 }

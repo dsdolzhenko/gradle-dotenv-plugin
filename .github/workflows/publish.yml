@@ -19,6 +19,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -29,11 +31,14 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
 
-      - name: Set artifact version based on tag name
-        run: echo "${{ github.event.release.tag_name }}" | sed -e 's/^v//' -e 's/^/VERSION=/' >> $GITHUB_ENV
-
-      - name: Publish to GitHub Packages and Space
+      - name: Publish to GitHub Packages
         run: ./gradlew publish --no-daemon
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_ACTOR: ${{ github.actor }}
+
+      - name: Publish to Gradle Plugin Portal
+        run: ./gradlew publishPlugins --no-daemon
+        env:
+          GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
+          GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}
