@@ -4,40 +4,17 @@ A Gradle plugin that loads environment variables from `.env` files and injects t
 
 ## Features
 
-- **Automatic subprocess injection** - Environment variables are available in `JavaExec`, `Exec`, and `Test` tasks  
-- **Multiple file support** - Load from multiple `.env` files with override priority  
-- **Multiline values** - Supports quoted multiline strings  
-- **Comments and formatting** - Handles comments, empty lines, and various quote styles  
-- **Variable filtering** - Include/exclude variables using regex patterns  
-- **CI/CD friendly** - System properties can override `.env` values  
+- **Automatic subprocess injection** - Environment variables are available in `JavaExec`, `Exec`, and `Test` tasks
+- **Multiple file support** - Load from multiple `.env` files with override priority
+- **Multiline values** - Supports quoted multiline strings
+- **Comments and formatting** - Handles comments, empty lines, and various quote styles
+- **Variable filtering** - Include/exclude variables using regex patterns
+- **CI/CD friendly** - System properties can override `.env` values
 - **Type-safe configuration** - Kotlin DSL extension for easy configuration
 
 ## Installation
 
-You will need a GitHub personal access token with `read:packages` scope to access the plugin's Maven repository.
-See [Authenticating to GitHub Packages](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry#authenticating-to-github-packages) for details.
-
-Assuming that you have `githubUsername` and `githubToken` variables set in your `gradle.properties`, add the following to your `settings.gradle.kts`:
-
-```kotlin
-pluginManagement {
-  val githubUsername: String? by settings
-  val githubToken: String? by settings
-
-  repositories {
-    maven {
-      url = uri("https://maven.pkg.github.com/dsdolzhenko/gradle-dotenv-plugin")
-      credentials {
-        username = githubUsername ?: System.getenv("GITHUB_USERNAME")
-        password = githubToken ?: System.getenv("GITHUB_TOKEN")
-      }
-    }
-    gradlePluginPortal()
-  }
-}
-```
-
-Then apply the plugin in your `build.gradle.kts`:
+Apply the plugin in your `build.gradle.kts`:
 
 ```kotlin
 plugins {
@@ -70,7 +47,7 @@ fun main() {
     val dbUrl = System.getenv("DATABASE_URL")
     val apiKey = System.getenv("API_KEY")
     val debug = System.getenv("DEBUG")?.toBoolean() ?: false
-    
+
     println("Database: $dbUrl")
     println("Debug mode: $debug")
 }
@@ -84,19 +61,19 @@ The plugin can be configured using the `dotenv` extension:
 dotenv {
     // Enable/disable the plugin (default: true)
     enabled.set(true)
-    
+
     // Load multiple .env files (later files override earlier ones)
     files.set(listOf(".env", ".env.local"))
-    
+
     // Require at least one .env file to exist (default: false)
     required.set(false)
-    
+
     // Allow system properties to override .env values (default: true)
     systemPropertiesOverride.set(true)
-    
+
     // Only include variables matching these regex patterns
     include.set(listOf("APP_.*", "DATABASE_.*"))
-    
+
     // Exclude variables matching these regex patterns
     exclude.set(listOf(".*_SECRET", ".*_PASSWORD"))
 }

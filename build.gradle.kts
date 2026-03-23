@@ -58,14 +58,5 @@ tasks.test {
 publishing {
     repositories {
         mavenLocal()
-
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/dsdolzhenko/gradle-dotenv-plugin")
-            credentials {
-                username = githubUsername
-                password = githubToken
-            }
-        }
     }
 }
