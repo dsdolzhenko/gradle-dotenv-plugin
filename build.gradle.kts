@@ -14,7 +14,7 @@ val githubToken: String by extra {
 
 plugins {
     kotlin("jvm") version "2.3.20"
-    id("com.palantir.git-version") version "4.2.0"
+    id("com.palantir.git-version") version "5.0.0"
     id("java-gradle-plugin")
     id("com.gradle.plugin-publish") version "1.3.0"
 }
