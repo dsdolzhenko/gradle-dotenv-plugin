@@ -42,6 +42,7 @@ jobs:
   # See: https://github.com/gradle/actions/tree/main/dependency-submission
   gradle-dependency-submission:
     runs-on: ubuntu-latest
+    needs: gradle-build
 
     permissions:
       contents: write
@@ -59,3 +60,4 @@ jobs:
         uses: gradle/actions/dependency-submission@v6
         with:
           cache-provider: basic
+          cache-read-only: true
