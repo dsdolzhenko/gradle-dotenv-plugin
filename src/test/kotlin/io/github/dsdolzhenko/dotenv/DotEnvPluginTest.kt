@@ -171,4 +171,41 @@ class DotEnvPluginTest {
         // Verify that TEST_VAR is not set (should be null)
         assertTrue(result.output.contains("ENV_CHECK:TEST_VAR=null"))
     }
+
+    @Test
+    fun `configuration cache is not invalidated by unrelated system properties`() {
+        envFile.writeText("TEST_VAR=test_value")
+
+        projectDir.resolve("settings.gradle.kts").writeText("")
+
+        buildFile.writeText(
+            """
+            plugins {
+                id("io.github.dsdolzhenko.dotenv")
+            }
+
+            tasks.register<Exec>("testExec") {
+                commandLine("echo", "test")
+            }
+            """.trimIndent()
+        )
+
+        fun run(vararg extraArgs: String) = GradleRunner.create()
+            .withProjectDir(projectDir)
+            .withArguments("testExec", "--configuration-cache", *extraArgs)
+            .withPluginClasspath()
+            .build()
+
+        // Prime the configuration cache.
+        run()
+
+        // A system property unrelated to any .env key must not bust the cache.
+        val result = run("-Dsome.unrelated.prop=value")
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":testExec")?.outcome)
+        assertTrue(
+            result.output.contains("Reusing configuration cache"),
+            "Expected configuration cache to be reused, but output was: ${result.output}"
+        )
+    }
 }

@@ -62,9 +62,12 @@ class DotEnvPlugin : Plugin<Project> {
             }
         }
 
-        // System properties override .env values if configured
+        // System properties override .env values if configured.
+        // Only consult properties for keys already loaded from .env files: reading the
+        // full system properties table would make the configuration cache invalidate
+        // whenever *any* unrelated system property changes.
         if (extension.systemPropertiesOverride.get()) {
-            System.getProperties().stringPropertyNames().forEach { key ->
+            envVars.keys.toList().forEach { key ->
                 System.getProperty(key)?.let { value ->
                     envVars[key] = value
                 }
