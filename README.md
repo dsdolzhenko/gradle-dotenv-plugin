@@ -11,6 +11,7 @@ A Gradle plugin that loads environment variables from `.env` files and injects t
 - **Variable filtering** - Include/exclude variables using regex patterns
 - **CI/CD friendly** - System properties can override `.env` values
 - **Type-safe configuration** - Kotlin DSL extension for easy configuration
+- **Configuration-time access** - Companion settings plugin exposes `.env` values for use in `build.gradle.kts`/`settings.gradle.kts` (e.g. repository credentials)
 
 ## Installation
 
@@ -78,6 +79,51 @@ dotenv {
     exclude.set(listOf(".*_SECRET", ".*_PASSWORD"))
 }
 ```
+
+## Configuration-Time Values (Repository Credentials, etc.)
+
+The plugin above only injects values into subprocess tasks (`JavaExec`, `Exec`, `Test`) during
+the configuration phase's `afterEvaluate` step — it can't help if you need a `.env` value
+*while* the build script is configuring itself, such as credentials for a `repositories { maven { ... } }`
+block. For that, apply the companion settings plugin instead:
+
+```kotlin
+// settings.gradle.kts
+plugins {
+    id("io.github.dsdolzhenko.dotenv.settings") version "<version>"
+}
+
+dotenv {
+    files.set(listOf(".env", ".env.local"))
+}
+```
+
+The loaded values are then available via the shared `dotenv` extension, both in
+`settings.gradle.kts` and in every project's `build.gradle.kts`:
+
+```kotlin
+// build.gradle.kts
+val spaceUsername: String = dotenv.get("SPACE_USERNAME") ?: ""
+val spaceToken: String = dotenv["SPACE_TOKEN"] ?: ""
+
+repositories {
+    maven {
+        url = uri("https://packages.jetbrains.team/maven/p/crl/maven")
+        credentials {
+            username = spaceUsername
+            password = spaceToken
+        }
+    }
+}
+```
+
+Values are loaded lazily on first `dotenv.get(...)`/`dotenv[...]` call, using whatever
+`files`/`required`/`systemPropertiesOverride` configuration is in place at that point — so
+configure the `dotenv { ... }` block in `settings.gradle.kts` before reading any values.
+
+Note this plugin doesn't (and can't) change the JVM's real environment variables — it only
+answers `dotenv.get(...)` lookups. Keep using the project plugin above for values that need to
+show up via real `System.getenv()` in subprocesses.
 
 ## .env File Format
 

@@ -1,13 +1,11 @@
 package io.github.dsdolzhenko.dotenv
 
-import io.github.cdimascio.dotenv.Dotenv
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.testing.Test
 import org.gradle.process.ProcessForkOptions
-import java.io.File
 
 /**
  * Gradle plugin that loads environment variables from .env files
@@ -48,46 +46,11 @@ class DotEnvPlugin : Plugin<Project> {
     private fun loadEnvironmentVariables(
         project: Project,
         extension: DotEnvExtension
-    ): Map<String, String> {
-        val envVars = mutableMapOf<String, String>()
-
-        // Load files in order (later files override earlier ones)
-        extension.files.get().forEach { filename ->
-            val file = project.rootProject.file(filename)
-            if (file.exists()) {
-                project.logger.info("Loading environment variables from: ${file.absolutePath}")
-                envVars.putAll(parseEnvFile(file))
-            } else {
-                project.logger.debug(".env file not found: ${file.absolutePath}")
-            }
-        }
-
-        // System properties override .env values if configured.
-        // Only consult properties for keys already loaded from .env files: reading the
-        // full system properties table would make the configuration cache invalidate
-        // whenever *any* unrelated system property changes.
-        if (extension.systemPropertiesOverride.get()) {
-            envVars.keys.toList().forEach { key ->
-                System.getProperty(key)?.let { value ->
-                    envVars[key] = value
-                }
-            }
-        }
-
-        return envVars
-    }
-
-    private fun parseEnvFile(file: File): Map<String, String> {
-        val dotenv = Dotenv.configure()
-            .directory(file.parent)
-            .filename(file.name)
-            .ignoreIfMissing()
-            .ignoreIfMalformed()
-            .load()
-
-        return dotenv.entries()
-            .associate { it.key to it.value }
-    }
+    ): Map<String, String> = EnvLoader.load(
+        baseDir = project.rootProject.projectDir,
+        files = extension.files.get(),
+        systemPropertiesOverride = extension.systemPropertiesOverride.get(),
+    )
 
     private fun configureAllTasks(
         project: Project,

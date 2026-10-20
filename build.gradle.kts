@@ -48,6 +48,14 @@ gradlePlugin {
             description = "Loads environment variables from .env files into Gradle tasks (JavaExec, Exec, Test)"
             tags.addAll("dotenv", "environment", "env")
         }
+
+        register("dotenv-settings") {
+            id = "io.github.dsdolzhenko.dotenv.settings"
+            implementationClass = "io.github.dsdolzhenko.dotenv.DotEnvSettingsPlugin"
+            displayName = "Gradle DotEnv Settings Plugin"
+            description = "Loads environment variables from .env files for configuration-time use, such as repository credentials"
+            tags.addAll("dotenv", "environment", "env")
+        }
     }
 }
 
