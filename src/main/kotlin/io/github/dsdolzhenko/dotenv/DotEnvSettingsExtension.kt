@@ -85,9 +85,23 @@ abstract class DotEnvSettingsExtension @Inject constructor(
         }
     }
 
+    // Lets other settings plugins (e.g. one resolving secret-manager references such as
+    // op://...) post-process every value looked up through this extension, so values stay
+    // usable as plain dotenv.get(...)/dotenv["..."] calls regardless of what loaded them.
+    private var valueResolver: (String) -> String = { it }
+
+    /**
+     * Registers a function that every value returned by [get] is passed through, so that
+     * references held in the .env file (e.g. secret-manager references) can be resolved
+     * transparently. Register this before any call to [get]; the last registration wins.
+     */
+    fun resolveValuesWith(resolver: (String) -> String) {
+        valueResolver = resolver
+    }
+
     /**
      * Looks up a value loaded from the configured .env files.
      * Also usable as `dotenv["KEY"]`.
      */
-    operator fun get(key: String): String? = values[key]
+    operator fun get(key: String): String? = values[key]?.let(valueResolver)
 }
