@@ -1,16 +1,19 @@
-val gitVersion: groovy.lang.Closure<String> by extra
+@Suppress("UNCHECKED_CAST")
+val gitVersion = extra["gitVersion"] as groovy.lang.Closure<String>
 
-val githubUsername: String by extra {
+extra.set(
+    "githubUsername",
     findProperty("githubUsername")?.toString()
         ?: System.getenv("GITHUB_ACTOR")?.ifEmpty { null }
-        ?: ""
-}
+        ?: "",
+)
 
-val githubToken: String by extra {
+extra.set(
+    "githubToken",
     findProperty("githubToken")?.toString()
         ?: System.getenv("GITHUB_TOKEN")?.ifEmpty { null }
-        ?: ""
-}
+        ?: "",
+)
 
 plugins {
     kotlin("jvm") version "2.3.21"
