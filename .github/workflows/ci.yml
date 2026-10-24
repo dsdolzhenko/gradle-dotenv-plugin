@@ -35,6 +35,12 @@ jobs:
         with:
           cache-provider: basic
 
+      - name: Cache Gradle configuration cache
+        uses: actions/cache@v4
+        with:
+          path: .gradle/configuration-cache
+          key: gradle-configuration-cache-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts') }}
+
       - name: Build with Gradle Wrapper
         run: ./gradlew build --no-daemon
 
