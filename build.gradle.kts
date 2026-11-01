@@ -16,10 +16,10 @@ extra.set(
 )
 
 plugins {
-    kotlin("jvm") version "2.3.21"
-    id("com.palantir.git-version") version "5.0.0"
+    kotlin("jvm") version "2.4.21"
+    id("com.palantir.git-version") version "5.1.0"
     id("java-gradle-plugin")
-    id("com.gradle.plugin-publish") version "2.1.1"
+    id("com.gradle.plugin-publish") version "2.2.1"
 }
 
 group = "io.github.dsdolzhenko"
